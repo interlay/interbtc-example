@@ -10,7 +10,7 @@ async function main() {
     await cryptoWaitReady();
 
     const keyring = new Keyring({ type: "sr25519" });
-    const account = keyring.addFromUri("//Alice");
+    const account = keyring.addFromUri("//Eve");
     // Alternatively, use a mnemonic
     // const account = keyring.addFromMnemonic("multiple word seed phrase used as private key etc");
     console.log(`Loaded account is: ${account.address}`);
