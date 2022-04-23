@@ -1,5 +1,5 @@
 import { BitcoinCoreClient, createInterBtcApi, CurrencyIdLiteral, issueSingle, newAccountId, newMonetaryAmount, newVaultId } from "@interlay/interbtc-api";
-import { KBtc, KBtcAmount, Kusama } from "@interlay/monetary-js";
+import { KBtc, Kusama } from "@interlay/monetary-js";
 import { Keyring } from "@polkadot/api";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 
@@ -15,12 +15,14 @@ async function main() {
     // const account = keyring.addFromMnemonic("multiple word seed phrase used as private key etc");
     console.log(`Loaded account is: ${account.address}`);
 
+    // Connect to Parachain
     const interbtcApi = await createInterBtcApi(
         PARACHAIN_URL,
         "testnet",
         account
     );
 
+    // Connect to Bitcoin node
     const bitcoinCoreClient = new BitcoinCoreClient(
         "testnet", // network
         "188.166.54.236", // bitcoin node host
@@ -30,6 +32,7 @@ async function main() {
         "0x90b21007e68badf303c047ae076eb0e2f4448cbf50c3667345d51b5d96fc146b-KSM-KBTC" // bitcoin wallet
     );
 
+    // Query Parachain
     const totalIssuableAmount = await interbtcApi.vaults.getTotalIssuableAmount();
     console.log(`Total issuable kBTC: ${totalIssuableAmount.toHuman()}`);
 
@@ -46,6 +49,8 @@ async function main() {
     const amountToIssue = vaultIssuableAmount.div(10000);
     console.log(`Issuing ${amountToIssue.str.BTC()} with ${vaultAccountId.toHuman()}...`);
 
+
+    // Send Parachain extrinsic and Bitcoin tx
     try {
         // Use this to call `interbtcApi` directly, but then need to send btc tx separately
         // await interbtcApi.issue.request(amountToIssue, vaultAccountId, CurrencyIdLiteral.KSM);

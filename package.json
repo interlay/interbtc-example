@@ -9,7 +9,7 @@
   "license": "MIT",
   "dependencies": {
     "@interlay/interbtc-api": "1.9.0",
-    "@interlay/monetary-js": "^0.5.4",
+    "@interlay/monetary-js": "0.6.0",
     "@polkadot/api": "7.7.1",
     "@types/node": "^17.0.24",
     "ts-node": "^10.7.0",
