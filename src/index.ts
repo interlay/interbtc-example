@@ -1,4 +1,4 @@
-import { createInterBtcApi, CurrencyIdLiteral, newAccountId, newMonetaryAmount, newVaultId } from "@interlay/interbtc-api";
+import { BitcoinCoreClient, createInterBtcApi, CurrencyIdLiteral, issueSingle, newAccountId, newMonetaryAmount, newVaultId } from "@interlay/interbtc-api";
 import { KBtc, KBtcAmount, Kusama } from "@interlay/monetary-js";
 import { Keyring } from "@polkadot/api";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
@@ -21,6 +21,15 @@ async function main() {
         account
     );
 
+    const bitcoinCoreClient = new BitcoinCoreClient(
+        "testnet", // network
+        "188.166.54.236", // bitcoin node host
+        "rpcuser", // bitcoin rpc user
+        "rpcpassword", // bitcoin rpc pass
+        "18332", // bitcoin node port
+        "0x90b21007e68badf303c047ae076eb0e2f4448cbf50c3667345d51b5d96fc146b-KSM-KBTC" // bitcoin wallet
+    );
+
     const totalIssuableAmount = await interbtcApi.vaults.getTotalIssuableAmount();
     console.log(`Total issuable kBTC: ${totalIssuableAmount.toHuman()}`);
 
@@ -33,12 +42,24 @@ async function main() {
     );
     console.log(`Issuable amount for vault ${vaultAccountIdString}: ${vaultIssuableAmount.toHuman()}`);
 
-    // request to issue 0.1% of the vault's capacity
-    const amountToIssue = vaultIssuableAmount.div(1000);
+    // request to issue 0.01% of the vault's capacity
+    const amountToIssue = vaultIssuableAmount.div(10000);
     console.log(`Issuing ${amountToIssue.str.BTC()} with ${vaultAccountId.toHuman()}...`);
 
     try {
-        await interbtcApi.issue.request(amountToIssue, vaultAccountId, CurrencyIdLiteral.KSM);
+        // Use this to call `interbtcApi` directly, but then need to send btc tx separately
+        // await interbtcApi.issue.request(amountToIssue, vaultAccountId, CurrencyIdLiteral.KSM);
+
+        // `issueSingle` creates an issue request on the parachain
+        // and then sends a BTC tx to the Vault.
+        const issueRequest = await issueSingle(
+            interbtcApi,
+            bitcoinCoreClient,
+            account,
+            amountToIssue,
+            vaultId
+        );
+        console.log(`Executed issue: ${issueRequest.request.id}`);
     } catch (error) {
         console.log(error);        
     } finally {
